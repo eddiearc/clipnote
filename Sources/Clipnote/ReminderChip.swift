@@ -8,6 +8,7 @@ struct ReminderChip: View {
     @Environment(\.colorScheme) private var colorScheme
     @State private var hovering = false
     @State private var sway: Double = 0
+    @State private var showDetail = false
 
     var body: some View {
         VStack(spacing: -Layout.clipBite) {
@@ -25,7 +26,12 @@ struct ReminderChip: View {
                 sway = restTilt + (restTilt >= 0 ? 0.9 : -0.9)
             }
         }
-        .onHover { hovering = $0 }
+        .onHover { hovering = $0; showDetail = $0 }
+        .popover(isPresented: $showDetail, arrowEdge: .bottom) {
+            DetailPopover(item: item)
+                .frame(width: 260)
+                .padding(12)
+        }
         .background {
             GeometryReader { geo in
                 Color.clear.preference(
@@ -122,6 +128,52 @@ struct ReminderChip: View {
             return "\(item.title), \(item.listName), \(due)"
         }
         return "\(item.title), \(item.listName)"
+    }
+}
+
+
+private struct DetailPopover: View {
+    let item: ReminderItem
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(item.title)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(.primary)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(metaLine)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.secondary)
+            if !item.notes.isEmpty {
+                Divider()
+                Text(item.notes)
+                    .font(.system(size: 11.5))
+                    .foregroundStyle(.primary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .lineLimit(10)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var metaLine: String {
+        var parts = [item.listName]
+        if let due = DueFormatter.string(for: item) {
+            parts.append(due)
+        }
+        if let p = priorityLabel {
+            parts.append(p)
+        }
+        return parts.joined(separator: " · ")
+    }
+
+    private var priorityLabel: String? {
+        switch item.priority {
+        case 1: return "High priority"
+        case 5: return "Medium priority"
+        case 9: return "Low priority"
+        default: return nil
+        }
     }
 }
 

@@ -12,7 +12,7 @@ fi
 
 CONFIG="${1:-release}"
 APP="build/Clipnote.app"
-VERSION="0.1.0"
+VERSION="0.1.1"
 
 echo "Building Clipnote ($CONFIG)…"
 swift build -c "$CONFIG" --product Clipnote
@@ -22,6 +22,9 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN" "$APP/Contents/MacOS/Clipnote"
 cp Resources/Info.plist "$APP/Contents/Info.plist"
+if [ -f Resources/AppIcon.icns ]; then
+  cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
+fi
 /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" "$APP/Contents/Info.plist" >/dev/null
 
 IDENTITY="${SIGN_IDENTITY:-}"

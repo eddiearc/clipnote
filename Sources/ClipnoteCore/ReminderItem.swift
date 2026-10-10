@@ -9,6 +9,7 @@ public struct ReminderItem: Identifiable, Hashable, Sendable {
     public let dueDate: Date?
     public let hasDueTime: Bool
     public let priority: Int
+    public let notes: String
 
     public init(
         id: String,
@@ -17,7 +18,8 @@ public struct ReminderItem: Identifiable, Hashable, Sendable {
         listColor: RGBA = .defaultList,
         dueDate: Date? = nil,
         hasDueTime: Bool = false,
-        priority: Int = 0
+        priority: Int = 0,
+        notes: String = ""
     ) {
         self.id = id
         self.title = title
@@ -26,6 +28,7 @@ public struct ReminderItem: Identifiable, Hashable, Sendable {
         self.dueDate = dueDate
         self.hasDueTime = hasDueTime
         self.priority = priority
+        self.notes = notes
     }
 
     /// 无截止日期不算过期；仅有日期时按「当天结束」判断。

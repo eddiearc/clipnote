@@ -10,23 +10,16 @@ struct ReminderChip: View {
     @State private var sway: Double = 0
 
     var body: some View {
-        // 整张（夹子+纸）从杆上揭下来，同时展开详情。
+        // 夹子始终扣在纸上：hover 只轻微前倾，并就地展开详情。
         VStack(spacing: -Layout.clipBite) {
             BinderClip()
                 .zIndex(1)
             stickyBody
         }
-        .rotationEffect(.degrees(hovering ? restTilt * 0.08 : sway), anchor: .top)
-        .rotation3DEffect(
-            .degrees(hovering ? 7 : 0),
-            axis: (x: 1, y: hovering ? 0.08 : 0, z: 0),
-            anchor: .top,
-            perspective: 0.55
-        )
-        .offset(y: hovering ? 12 : 0)
-        .scaleEffect(hovering ? 1.015 : 1, anchor: .top)
+        .rotationEffect(.degrees(hovering ? restTilt * 0.35 : sway), anchor: .top)
+        .offset(y: hovering ? -3 : 0)
         .zIndex(hovering ? 40 : 0)
-        .animation(.interactiveSpring(response: 0.48, dampingFraction: 0.84, blendDuration: 0.12), value: hovering)
+        .animation(.interactiveSpring(response: 0.42, dampingFraction: 0.86, blendDuration: 0.1), value: hovering)
         .onAppear {
             sway = restTilt
             let duration = 2.8 + abs(restTilt) * 0.4
@@ -110,9 +103,9 @@ struct ReminderChip: View {
             RoundedRectangle(cornerRadius: hovering ? 3.2 : 2.5, style: .continuous)
                 .strokeBorder(Color.black.opacity(hovering ? 0.06 : 0.04), lineWidth: 0.6)
         }
-        .shadow(color: .black.opacity(hovering ? 0.22 : 0.10), radius: hovering ? 18 : 2.5, y: hovering ? 16 : 2)
-        .shadow(color: Color(red: 0.45, green: 0.32, blue: 0.16).opacity(hovering ? 0.12 : 0), radius: hovering ? 8 : 0, y: hovering ? 6 : 0)
-        .shadow(color: .black.opacity(hovering ? 0.10 : 0.08), radius: hovering ? 2.5 : 0.6, y: hovering ? 1.5 : 0.5)
+        .shadow(color: .black.opacity(hovering ? 0.16 : 0.10), radius: hovering ? 8 : 2.5, y: hovering ? 5 : 2)
+        .shadow(color: Color(red: 0.45, green: 0.32, blue: 0.16).opacity(hovering ? 0.08 : 0), radius: hovering ? 4 : 0, y: hovering ? 2 : 0)
+        .shadow(color: .black.opacity(0.08), radius: 0.6, y: 0.5)
     }
 
     /// 由 id 决定的静止倾角，左右略不齐。

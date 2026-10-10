@@ -1,7 +1,7 @@
 import CoreGraphics
 
 enum Layout {
-    static let panelHeight: CGFloat = 320
+    static let panelHeight: CGFloat = 280
     static let barTop: CGFloat = 8
     static let barHeight: CGFloat = 3.5
     static let clipHeight: CGFloat = 20

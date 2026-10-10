@@ -8,17 +8,22 @@ struct ReminderChip: View {
     @Environment(\.colorScheme) private var colorScheme
     @State private var hovering = false
     @State private var sway: Double = 0
-    @State private var showDetail = false
 
     var body: some View {
-        VStack(spacing: -Layout.clipBite) {
+        VStack(spacing: hovering ? 10 : -Layout.clipBite) {
+            // 夹子留在杆上；纸被揭下来。
             BinderClip()
                 .zIndex(1)
+                .opacity(hovering ? 0.42 : 1)
+                .scaleEffect(hovering ? 0.92 : 1, anchor: .center)
             stickyBody
+                .scaleEffect(hovering ? 1.07 : 1, anchor: .top)
+                .offset(y: hovering ? 16 : 0)
+                .rotationEffect(.degrees(hovering ? restTilt * 0.15 : 0), anchor: .top)
         }
-        .rotationEffect(.degrees(hovering ? restTilt * 0.2 : sway), anchor: .top)
-        .offset(y: hovering ? -1 : 0)
-        .animation(.spring(response: 0.32, dampingFraction: 0.78), value: hovering)
+        .rotationEffect(.degrees(hovering ? 0 : sway), anchor: .top)
+        .zIndex(hovering ? 40 : 0)
+        .animation(.spring(response: 0.38, dampingFraction: 0.72), value: hovering)
         .onAppear {
             sway = restTilt
             let duration = 2.8 + abs(restTilt) * 0.4
@@ -26,12 +31,7 @@ struct ReminderChip: View {
                 sway = restTilt + (restTilt >= 0 ? 0.9 : -0.9)
             }
         }
-        .onHover { hovering = $0; showDetail = $0 }
-        .popover(isPresented: $showDetail, arrowEdge: .bottom) {
-            DetailPopover(item: item)
-                .frame(width: 260)
-                .padding(12)
-        }
+        .onHover { hovering = $0 }
         .background {
             GeometryReader { geo in
                 Color.clear.preference(
@@ -85,8 +85,8 @@ struct ReminderChip: View {
             PaperStock(seed: paperSeed, scheme: colorScheme)
         }
         .clipShape(RoundedRectangle(cornerRadius: 2.5, style: .continuous))
-        .shadow(color: .black.opacity(hovering ? 0.16 : 0.10), radius: hovering ? 7 : 2.5, y: hovering ? 5 : 2)
-        .shadow(color: .black.opacity(0.08), radius: 0.6, y: 0.5)
+        .shadow(color: .black.opacity(hovering ? 0.28 : 0.10), radius: hovering ? 16 : 2.5, y: hovering ? 14 : 2)
+        .shadow(color: .black.opacity(hovering ? 0.12 : 0.08), radius: hovering ? 3 : 0.6, y: hovering ? 2 : 0.5)
     }
 
     /// 由 id 决定的静止倾角，左右略不齐。
@@ -131,51 +131,6 @@ struct ReminderChip: View {
     }
 }
 
-
-private struct DetailPopover: View {
-    let item: ReminderItem
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(item.title)
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(.primary)
-                .fixedSize(horizontal: false, vertical: true)
-            Text(metaLine)
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(.secondary)
-            if !item.notes.isEmpty {
-                Divider()
-                Text(item.notes)
-                    .font(.system(size: 11.5))
-                    .foregroundStyle(.primary)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .lineLimit(10)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var metaLine: String {
-        var parts = [item.listName]
-        if let due = DueFormatter.string(for: item) {
-            parts.append(due)
-        }
-        if let p = priorityLabel {
-            parts.append(p)
-        }
-        return parts.joined(separator: " · ")
-    }
-
-    private var priorityLabel: String? {
-        switch item.priority {
-        case 1: return "High priority"
-        case 5: return "Medium priority"
-        case 9: return "Low priority"
-        default: return nil
-        }
-    }
-}
 
 /// 暖白纸：纤维、浅格线、上沿受光、夹口压痕、右下折角。
 private struct PaperStock: View {

@@ -58,17 +58,17 @@ struct ReminderChip: View {
                     Text(item.title)
                         .font(.system(size: 12.5, weight: .semibold))
                         .foregroundStyle(ink)
-                        .lineLimit(hovering ? 4 : 2)
+                        .lineLimit(hovering ? 8 : 2)
                         .multilineTextAlignment(.leading)
                     Text(detailMetaLine)
                         .font(.system(size: 10.5, weight: .medium))
                         .foregroundStyle(dueColor)
-                        .lineLimit(hovering ? 2 : 1)
+                        .lineLimit(hovering ? 3 : 1)
                     if hovering, !item.notes.isEmpty {
                         Text(item.notes)
                             .font(.system(size: 10.5))
                             .foregroundStyle(ink.opacity(0.72))
-                            .lineLimit(6)
+                            .lineLimit(12)
                             .multilineTextAlignment(.leading)
                             .padding(.top, 2)
                     } else if hovering {
@@ -91,8 +91,12 @@ struct ReminderChip: View {
         .padding(.top, 12)
         .padding(.bottom, hovering ? 12 : 8)
         .frame(
-            width: hovering ? Layout.cardWidth + 24 : Layout.cardWidth,
-            height: hovering ? Layout.cardHeightExpanded : Layout.cardHeight,
+            width: hovering ? Layout.cardWidthExpanded : Layout.cardWidth,
+            alignment: .topLeading
+        )
+        .frame(
+            minHeight: hovering ? Layout.cardHeightExpanded : Layout.cardHeight,
+            maxHeight: hovering ? Layout.cardHeightExpanded : Layout.cardHeight,
             alignment: .topLeading
         )
         .background {

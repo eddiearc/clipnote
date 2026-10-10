@@ -73,7 +73,7 @@ struct LineView: View {
                 .frame(minWidth: geo.size.width)
             }
         }
-        .frame(height: Layout.clipHeight + Layout.cardHeightExpanded - Layout.clipBite + 40)
+        .frame(height: Layout.clipHeight + Layout.cardHeightExpanded - Layout.clipBite + 60)
     }
 }
 

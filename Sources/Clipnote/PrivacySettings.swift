@@ -16,6 +16,10 @@ enum PrivacySettings {
     }
 
     static func openRemindersApp() {
+        // Prefer the Reminders URL scheme so the app comes forward; fall back to the bundle path.
+        if let scheme = URL(string: "x-apple-reminderkit://"), NSWorkspace.shared.open(scheme) {
+            return
+        }
         let url = URL(fileURLWithPath: "/System/Applications/Reminders.app")
         NSWorkspace.shared.open(url)
     }

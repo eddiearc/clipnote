@@ -50,19 +50,25 @@ struct ReminderChip: View {
             .help("Click the circle to mark complete")
             .accessibilityLabel("Mark \(item.title) complete")
 
-            VStack(alignment: .leading, spacing: 3) {
-                Text(item.title)
-                    .font(.system(size: 12.5, weight: .semibold))
-                    .foregroundStyle(ink)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
-                Text(metaLine)
-                    .font(.system(size: 10.5, weight: .medium))
-                    .foregroundStyle(dueColor)
-                    .lineLimit(1)
+            Button(action: { PrivacySettings.openRemindersApp() }) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(item.title)
+                        .font(.system(size: 12.5, weight: .semibold))
+                        .foregroundStyle(ink)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                    Text(metaLine)
+                        .font(.system(size: 10.5, weight: .medium))
+                        .foregroundStyle(dueColor)
+                        .lineLimit(1)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
+            .help("Open in Reminders")
             .accessibilityElement(children: .combine)
-            .accessibilityLabel(accessibilityText)
+            .accessibilityLabel(accessibilityText + " Open in Reminders.")
         }
         .padding(.leading, 8)
         .padding(.trailing, 10)

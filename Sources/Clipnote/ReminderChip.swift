@@ -16,11 +16,17 @@ struct ReminderChip: View {
                 .zIndex(1)
             stickyBody
         }
-        .rotationEffect(.degrees(hovering ? restTilt * 0.1 : sway), anchor: .top)
-        .offset(y: hovering ? 18 : 0)
-        .scaleEffect(hovering ? 1.05 : 1, anchor: .top)
+        .rotationEffect(.degrees(hovering ? restTilt * 0.08 : sway), anchor: .top)
+        .rotation3DEffect(
+            .degrees(hovering ? 7 : 0),
+            axis: (x: 1, y: hovering ? 0.08 : 0, z: 0),
+            anchor: .top,
+            perspective: 0.55
+        )
+        .offset(y: hovering ? 12 : 0)
+        .scaleEffect(hovering ? 1.015 : 1, anchor: .top)
         .zIndex(hovering ? 40 : 0)
-        .animation(.spring(response: 0.36, dampingFraction: 0.76), value: hovering)
+        .animation(.interactiveSpring(response: 0.48, dampingFraction: 0.84, blendDuration: 0.12), value: hovering)
         .onAppear {
             sway = restTilt
             let duration = 2.8 + abs(restTilt) * 0.4
@@ -56,7 +62,7 @@ struct ReminderChip: View {
             Button(action: { PrivacySettings.openRemindersApp() }) {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(item.title)
-                        .font(.system(size: 12.5, weight: .semibold))
+                        .font(.system(size: hovering ? 13 : 12.5, weight: .semibold, design: .rounded))
                         .foregroundStyle(ink)
                         .lineLimit(hovering ? 8 : 2)
                         .multilineTextAlignment(.leading)
@@ -66,8 +72,8 @@ struct ReminderChip: View {
                         .lineLimit(hovering ? 3 : 1)
                     if hovering, !item.notes.isEmpty {
                         Text(item.notes)
-                            .font(.system(size: 10.5))
-                            .foregroundStyle(ink.opacity(0.72))
+                            .font(.system(size: 11, weight: .regular, design: .rounded))
+                            .foregroundStyle(ink.opacity(0.78))
                             .lineLimit(12)
                             .multilineTextAlignment(.leading)
                             .padding(.top, 2)
@@ -89,22 +95,24 @@ struct ReminderChip: View {
         .padding(.leading, 8)
         .padding(.trailing, 10)
         .padding(.top, 12)
-        .padding(.bottom, hovering ? 12 : 8)
-        .frame(
-            width: hovering ? Layout.cardWidthExpanded : Layout.cardWidth,
-            alignment: .topLeading
-        )
+        .padding(.bottom, hovering ? 14 : 8)
+        .frame(width: Layout.cardWidth, alignment: .topLeading)
         .frame(
             minHeight: hovering ? Layout.cardHeightExpanded : Layout.cardHeight,
             maxHeight: hovering ? Layout.cardHeightExpanded : Layout.cardHeight,
             alignment: .topLeading
         )
         .background {
-            PaperStock(seed: paperSeed, scheme: colorScheme)
+            PaperStock(seed: paperSeed, scheme: colorScheme, lifted: hovering)
         }
-        .clipShape(RoundedRectangle(cornerRadius: 2.5, style: .continuous))
-        .shadow(color: .black.opacity(hovering ? 0.26 : 0.10), radius: hovering ? 14 : 2.5, y: hovering ? 12 : 2)
-        .shadow(color: .black.opacity(hovering ? 0.12 : 0.08), radius: hovering ? 3 : 0.6, y: hovering ? 2 : 0.5)
+        .clipShape(RoundedRectangle(cornerRadius: hovering ? 3.2 : 2.5, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: hovering ? 3.2 : 2.5, style: .continuous)
+                .strokeBorder(Color.black.opacity(hovering ? 0.06 : 0.04), lineWidth: 0.6)
+        }
+        .shadow(color: .black.opacity(hovering ? 0.22 : 0.10), radius: hovering ? 18 : 2.5, y: hovering ? 16 : 2)
+        .shadow(color: Color(red: 0.45, green: 0.32, blue: 0.16).opacity(hovering ? 0.12 : 0), radius: hovering ? 8 : 0, y: hovering ? 6 : 0)
+        .shadow(color: .black.opacity(hovering ? 0.10 : 0.08), radius: hovering ? 2.5 : 0.6, y: hovering ? 1.5 : 0.5)
     }
 
     /// 由 id 决定的静止倾角，左右略不齐。
@@ -174,32 +182,50 @@ struct ReminderChip: View {
 private struct PaperStock: View {
     let seed: UInt64
     let scheme: ColorScheme
+    var lifted: Bool = false
 
     var body: some View {
         Canvas { context, size in
-            let shape = Path(roundedRect: CGRect(origin: .zero, size: size), cornerRadius: 2.5)
+            let corner: CGFloat = lifted ? 3.2 : 2.5
+            let shape = Path(roundedRect: CGRect(origin: .zero, size: size), cornerRadius: corner)
             let dark = scheme == .dark
             let paper = dark
-                ? Color(red: 0.34, green: 0.30, blue: 0.25)
-                : Color(red: 0.975, green: 0.945, blue: 0.885)
+                ? Color(red: 0.36, green: 0.31, blue: 0.25)
+                : (lifted
+                    ? Color(red: 0.988, green: 0.955, blue: 0.88)
+                    : Color(red: 0.975, green: 0.945, blue: 0.885))
             let shade = dark
                 ? Color(red: 0.24, green: 0.21, blue: 0.17)
-                : Color(red: 0.86, green: 0.78, blue: 0.66)
+                : Color(red: 0.84, green: 0.74, blue: 0.58)
             let fiber = dark
-                ? Color.white.opacity(0.045)
-                : Color(red: 0.45, green: 0.32, blue: 0.16).opacity(0.065)
+                ? Color.white.opacity(lifted ? 0.07 : 0.045)
+                : Color(red: 0.45, green: 0.32, blue: 0.16).opacity(lifted ? 0.11 : 0.065)
             let rule = dark
-                ? Color(red: 0.55, green: 0.62, blue: 0.72).opacity(0.11)
-                : Color(red: 0.35, green: 0.45, blue: 0.62).opacity(0.11)
+                ? Color(red: 0.55, green: 0.62, blue: 0.72).opacity(lifted ? 0.16 : 0.11)
+                : Color(red: 0.28, green: 0.40, blue: 0.58).opacity(lifted ? 0.18 : 0.11)
 
             context.fill(shape, with: .color(paper))
+            if lifted && !dark {
+                context.fill(
+                    shape,
+                    with: .radialGradient(
+                        Gradient(colors: [
+                            Color(red: 1.0, green: 0.97, blue: 0.90).opacity(0.55),
+                            Color.clear
+                        ]),
+                        center: CGPoint(x: size.width * 0.35, y: size.height * 0.2),
+                        startRadius: 4,
+                        endRadius: max(size.width, size.height) * 0.85
+                    )
+                )
+            }
             context.fill(
                 shape,
                 with: .linearGradient(
                     Gradient(colors: [
-                        Color.white.opacity(dark ? 0.07 : 0.34),
+                        Color.white.opacity(dark ? 0.07 : (lifted ? 0.42 : 0.34)),
                         Color.clear,
-                        shade.opacity(0.55)
+                        shade.opacity(lifted ? 0.7 : 0.55)
                     ]),
                     startPoint: CGPoint(x: size.width * 0.15, y: 0),
                     endPoint: CGPoint(x: size.width * 0.8, y: size.height)
@@ -229,7 +255,8 @@ private struct PaperStock: View {
                 layer.stroke(rules, with: .color(rule), lineWidth: 0.55)
 
                 var rng = SplitMix(state: seed == 0 ? 0xA5A5_F00D : seed)
-                for _ in 0..<22 {
+                let speckCount = lifted ? 48 : 22
+                for _ in 0..<speckCount {
                     let px = rng.next() * size.width
                     let py = rng.next() * size.height
                     let r = 0.4 + rng.next() * 0.65

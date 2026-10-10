@@ -10,20 +10,17 @@ struct ReminderChip: View {
     @State private var sway: Double = 0
 
     var body: some View {
-        VStack(spacing: hovering ? 10 : -Layout.clipBite) {
-            // 夹子留在杆上；纸被揭下来。
+        // 整张（夹子+纸）从杆上揭下来，同时展开详情。
+        VStack(spacing: -Layout.clipBite) {
             BinderClip()
                 .zIndex(1)
-                .opacity(hovering ? 0.42 : 1)
-                .scaleEffect(hovering ? 0.92 : 1, anchor: .center)
             stickyBody
-                .scaleEffect(hovering ? 1.07 : 1, anchor: .top)
-                .offset(y: hovering ? 16 : 0)
-                .rotationEffect(.degrees(hovering ? restTilt * 0.15 : 0), anchor: .top)
         }
-        .rotationEffect(.degrees(hovering ? 0 : sway), anchor: .top)
+        .rotationEffect(.degrees(hovering ? restTilt * 0.1 : sway), anchor: .top)
+        .offset(y: hovering ? 18 : 0)
+        .scaleEffect(hovering ? 1.05 : 1, anchor: .top)
         .zIndex(hovering ? 40 : 0)
-        .animation(.spring(response: 0.38, dampingFraction: 0.72), value: hovering)
+        .animation(.spring(response: 0.36, dampingFraction: 0.76), value: hovering)
         .onAppear {
             sway = restTilt
             let duration = 2.8 + abs(restTilt) * 0.4
@@ -61,12 +58,25 @@ struct ReminderChip: View {
                     Text(item.title)
                         .font(.system(size: 12.5, weight: .semibold))
                         .foregroundStyle(ink)
-                        .lineLimit(2)
+                        .lineLimit(hovering ? 4 : 2)
                         .multilineTextAlignment(.leading)
-                    Text(metaLine)
+                    Text(detailMetaLine)
                         .font(.system(size: 10.5, weight: .medium))
                         .foregroundStyle(dueColor)
-                        .lineLimit(1)
+                        .lineLimit(hovering ? 2 : 1)
+                    if hovering, !item.notes.isEmpty {
+                        Text(item.notes)
+                            .font(.system(size: 10.5))
+                            .foregroundStyle(ink.opacity(0.72))
+                            .lineLimit(6)
+                            .multilineTextAlignment(.leading)
+                            .padding(.top, 2)
+                    } else if hovering {
+                        Text("No notes")
+                            .font(.system(size: 10.5))
+                            .foregroundStyle(ink.opacity(0.4))
+                            .padding(.top, 2)
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .contentShape(Rectangle())
@@ -79,13 +89,17 @@ struct ReminderChip: View {
         .padding(.leading, 8)
         .padding(.trailing, 10)
         .padding(.top, 12)
-        .padding(.bottom, 8)
-        .frame(width: Layout.cardWidth, height: Layout.cardHeight, alignment: .topLeading)
+        .padding(.bottom, hovering ? 12 : 8)
+        .frame(
+            width: hovering ? Layout.cardWidth + 24 : Layout.cardWidth,
+            height: hovering ? Layout.cardHeightExpanded : Layout.cardHeight,
+            alignment: .topLeading
+        )
         .background {
             PaperStock(seed: paperSeed, scheme: colorScheme)
         }
         .clipShape(RoundedRectangle(cornerRadius: 2.5, style: .continuous))
-        .shadow(color: .black.opacity(hovering ? 0.28 : 0.10), radius: hovering ? 16 : 2.5, y: hovering ? 14 : 2)
+        .shadow(color: .black.opacity(hovering ? 0.26 : 0.10), radius: hovering ? 14 : 2.5, y: hovering ? 12 : 2)
         .shadow(color: .black.opacity(hovering ? 0.12 : 0.08), radius: hovering ? 3 : 0.6, y: hovering ? 2 : 0.5)
     }
 
@@ -115,6 +129,26 @@ struct ReminderChip: View {
             parts.append(due)
         }
         return parts.joined(separator: " · ")
+    }
+
+    private var detailMetaLine: String {
+        var parts = [item.listName]
+        if let due = DueFormatter.string(for: item) {
+            parts.append(due)
+        }
+        if let priority = priorityLabel {
+            parts.append(priority)
+        }
+        return parts.joined(separator: " · ")
+    }
+
+    private var priorityLabel: String? {
+        switch item.priority {
+        case 1: return "High"
+        case 5: return "Medium"
+        case 9: return "Low"
+        default: return nil
+        }
     }
 
     private var dueColor: Color {
